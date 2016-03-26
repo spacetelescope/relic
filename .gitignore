@@ -1,0 +1,10 @@
+.idea/
+dist/
+build/
+__pycache__/
+RECON-INFO
+recon/version.py
+testing.py
+*.egg-info
+*_orig.*
+*.pyc

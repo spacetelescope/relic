@@ -25,6 +25,7 @@ import sys
 try:
     from .version import *
 except ImportError:
-    print('First run detected.')
+    # If we are imported via submodule, ignore RECON's internal version data.
+    pass
 
 PY3 = sys.version_info[0] == 3

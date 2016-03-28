@@ -120,9 +120,15 @@ def git_version_info(remove_pattern=None):
                 hack = components[idx:]
                 hack.reverse()
                 version_short = '-'.join(hack)
-                pep386 = ''.join([hack[0], '.dev', post])
+                if post:
+                    if int(post) > 0:
+                        pep386 = ''.join([hack[0], '.dev', post])
+                    else:
+                        pep386 = version_long.split('-')[0]
+                        break
                 break
     else:
+        #Worst case scenario: somehow we managed not to obtain a long tag description
         if '-' in version_long:
             version_short = version_long.split('-')[0]
         else:

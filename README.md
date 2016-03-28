@@ -11,7 +11,13 @@ BSD
 
 ## Usage
 
-**setup.py:**
+**Add the RECON submodule to your project:**
+
+```bash
+git submodule add https://github.com/jhunkeler/recon.git
+```
+
+**Configure setup.py:**
 
 ```python
 import sys
@@ -30,28 +36,23 @@ setup(
 )
 ```
 
-**MANIFEST.in:**
+**Configure MANIFEST.in:**
 
 ```
 include RECON-INFO
 ```
 
-**.gitignore:**
+**Configure .gitignore:**
 
 ```
 RECON-INFO
 sample/version.py
 ```
 
-**.gitmodules:**
-
-```
-[submodule "recon"]
-	path = recon
-	url = https://github.com/jhunkeler/recon.git
-```
 
 ## Version module
+
+Here are a few examples of the `version.py` file RECON generates for you.
 
 ### Standard release tag
 

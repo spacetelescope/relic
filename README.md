@@ -77,8 +77,7 @@ __version_date__ = '2016-03-25 17:34:17 -0400'
 __version_dirty__ = False
 __build_date__ = '2016-03-26'
 __build_time__ = '17:13:50.997002'
-__build_status__ = 'release' if not __version_post__ \
-    and not __version_commit__ \
+__build_status__ = 'release' if not int(__version_post__) > 0 \
     and not __version_dirty__ \
     else 'development'
 ```
@@ -107,8 +106,7 @@ __version_date__ = '2016-03-26 00:55:27 -0400'
 __version_dirty__ = False
 __build_date__ = '2016-03-26'
 __build_time__ = '17:19:29.884038'
-__build_status__ = 'release' if not __version_post__ \
-    and not __version_commit__ \
+__build_status__ = 'release' if not int(__version_post__) > 0 \
     and not __version_dirty__ \
     else 'development'
 ```
@@ -137,8 +135,7 @@ __version_date__ = '2016-03-26 00:55:27 -0400'
 __version_dirty__ = True
 __build_date__ = '2016-03-26'
 __build_time__ = '17:20:54.291836'
-__build_status__ = 'release' if not __version_post__ \
-    and not __version_commit__ \
+__build_status__ = 'release' if not int(__version_post__) > 0 \
     and not __version_dirty__ \
     else 'development'
 ```

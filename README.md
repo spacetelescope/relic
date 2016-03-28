@@ -15,7 +15,7 @@ BSD
 
 ```python
 import sys
-sys.path.insert(1, './recon')
+sys.path.insert(1, 'recon')
 
 import recon.release
 from setuptools import setup
@@ -28,7 +28,6 @@ setup(
     version=version.pep386,
     ...
 )
-
 ```
 
 **MANIFEST.in:**

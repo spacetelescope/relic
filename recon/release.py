@@ -49,8 +49,7 @@ __version_date__ = '{3}'
 __version_dirty__ = {4}
 __build_date__ = '{5}'
 __build_time__ = '{6}'
-__build_status__ = 'release' if not __version_post__ \\
-    and not __version_commit__ \\
+__build_status__ = 'release' if not int(__version_post__) > 0 \\
     and not __version_dirty__ \\
     else 'development'
 """

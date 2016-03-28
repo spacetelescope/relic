@@ -31,7 +31,7 @@ GitVersion = namedtuple('GitVersion', ['pep386', 'short', 'long', 'date', 'dirty
 
 
 def git_describe(abbrev=8):
-    proc = Popen(['git', 'describe', '--always', '--tags', '--dirty', '--abbrev={0}'.format(abbrev)],
+    proc = Popen(['git', 'describe', '--always', '--long', '--tags', '--dirty', '--abbrev={0}'.format(abbrev)],
                  stdout=PIPE,
                  stderr=PIPE,
                  stdin=PIPE)
@@ -100,7 +100,7 @@ def git_version_info(remove_pattern=None):
         if remove_pattern in version_long:
             version_long = version_long.replace(remove_pattern, '')
 
-    # Is this a post commit string?
+    # Is this a post commit string? It should be considering '--long' usage
     prog = re.compile('.*-g([a-z]|[0-9]).*')
     match = re.match(prog, version_long)
 

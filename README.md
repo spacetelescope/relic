@@ -26,7 +26,7 @@ recon.release.write_template(version, 'sample/')
 setup(
     name='sample',
     version=version.pep386,
-    ...
+    #...
 )
 ```
 

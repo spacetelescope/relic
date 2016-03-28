@@ -81,6 +81,7 @@ def write_info(version):
 
     with open('RECON-INFO', 'w+') as f:
         f.write(json.dumps(info))
+        f.write('\n')
 
 
 def read_info():

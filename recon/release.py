@@ -89,7 +89,7 @@ def read_info():
         with open('RECON-INFO', 'r') as f:
             data = json.loads(f.read())
             return git.GitVersion(**data)
-    except OSError:
+    except (OSError, IOError):
         return None
 
 

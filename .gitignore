@@ -2,8 +2,8 @@
 dist/
 build/
 __pycache__/
-RECON-INFO
-recon/version.py
+RELIC-INFO
+relic/version.py
 testing.py
 *.egg-info
 *_orig.*

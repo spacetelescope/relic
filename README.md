@@ -2,11 +2,11 @@
 
 ## What is RELIC?
 
-RELIC stands for "Release I Control". This software attempts to automatically maintain a git project's version information without the need for hardcoded values in the source code. This software is designed primarily for hardcore build maintainers and is best used with continuous integration services (i.e Travis-CI, etc). 
+RELIC stands for "Release I Control". This software attempts to automatically maintain a git project's version information without the need for hardcoded values in the source code. It is designed primarily for hardcore build maintainers, and is best used with continuous integration services (i.e Travis-CI, etc). 
 
-Unless RELIC is distributed as a git submodule within your repository, an anonymous end-user must have RELIC installed prior to executing your project's `setup.py`.
+Unless RELIC is distributed as a git submodule within your repository, an anonymous end-user must have RELIC installed, or in their PYTHONPATH, prior to executing your project's `setup.py`.
 
-**Note**: If you plan to build packages for Conda you must install this package directly into the build environment. `conda-build` does not recursively clone git repositories, so access to submodule data is limited at best. To work around this issue add `relic` as a build dependency in the `requirements` section of your recipe:
+**Note**: If you plan to build packages for Conda you will need to install this package directly into the build environment. `conda-build` does not recursively clone git repositories, so access to submodule data is limited at best. To work around this issue add `relic` as a build dependency in the `requirements` section of your recipe:
 
 ```yaml
 requirements:
@@ -148,10 +148,9 @@ setup(
 )
 ```
 
-
 ## Additional Requirements
 
-In order to build against a tarball generated with `python setup.py sdist`, you will need to create a `MANIFEST.in` file to retain the `RELIC-INFO` cache created at compile-time. `RELIC-INFO` contains your project's version information in an easy-to-parse JSON array.
+In order to build against a tarball generated with `python setup.py sdist`, you will need to create a `MANIFEST.in` file to retain the `RELIC-INFO` cache created at build-time. `RELIC-INFO` contains your project's version information in an easy-to-parse JSON array.
 
 **Configure MANIFEST.in:**
 

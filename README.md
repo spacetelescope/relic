@@ -2,14 +2,81 @@
 
 ## What is RELIC?
 
-RELIC stands for "Release I Control" and attempts to, using git tags, automatically maintain git project's version information.
+RELIC stands for "Release I Control". This software attempts to automatically maintain a git project's version information without the need for hardcoded values in the source code. This software is designed primarily for hardcore build maintainers and is best used with continuous integration services (i.e Travis-CI, etc). 
 
+Unless RELIC is distributed as a git submodule within your repository, an anonymous end-user must have RELIC installed prior to executing your project's `setup.py`.
+
+**Note**: If you plan to build packages for Conda you must install this package directly into the build environment. `conda-build` does not recursively clone git repositories, so access to submodule data is limited at best. To work around this issue add `relic` as a build dependency in the `requirements` section of your recipe:
+
+```yaml
+requirements:
+    build:
+    - relic
+    # ...
+```
 
 ## License
 
 BSD
 
-## Usage
+## Installing RELIC
+
+### From PyPi with pip (release)
+
+```bash
+pip install relic
+```
+
+### From GitHub with pip (devel)
+
+```bash
+pip install git+https://github.com/jhunkeler/relic.git
+```
+
+### From Github with git (devel)
+
+```bash
+git clone https://github.com/jhunkeler/relic.git
+cd relic
+python setup.py install
+```
+
+## Incorporating RELIC into your project
+
+
+### As a Package (recommended for CI services)
+
+**Install RELIC**
+
+```bash
+pip install relic
+```
+
+**Configure `setup.py`**
+
+```python
+try:
+    import relic.release
+except ImportError:
+    print('This package requires RELIC ("Release I Control"):')
+    print('  pip install relic')
+    exit(1)
+
+from setuptools import setup
+
+
+version = relic.release.get_info()
+relic.release.write_template(version, 'sample/')
+
+setup(
+    name='sample',
+    version=version.pep386,
+    install_requires=['relic', ...]
+    #...
+)
+```
+
+### As a Git Submodule (recommended for high availability)
 
 **Add the RELIC submodule to your project:**
 
@@ -36,11 +103,63 @@ setup(
 )
 ```
 
+### As an automated download (alternative method)
+
+Sometimes a submodule just won't do. If you are not afraid of a little extra code you may bootstrap the RELIC package at build-time.
+
+**Configure setup.py:**
+
+```python
+import os
+import subprocess
+import sys
+
+
+def relic_bootstrap():
+    try:
+        import relic.release
+    except ImportError:
+        if not os.path.exists('relic'):
+            try:
+                subprocess.check_call(['git', 'clone', 
+                    'https://github.com/jhunkeler/relic.git'])
+            except subprocess.CalledProcessError as e:
+                print(e)
+                return False
+        
+        sys.path.insert(1, 'relic')
+    return True
+
+
+if not relic_bootstrap():
+    print('Failed to bootstrap RELIC.')
+    exit(1)
+
+import relic.release
+from setuptools import setup
+
+version = relic.release.get_info()
+relic.release.write_template(version, 'sample/')
+
+setup(
+    name='sample',
+    version=version.pep386,
+    #...
+)
+```
+
+
+## Additional Requirements
+
+In order to build against a tarball generated with `python setup.py sdist`, you will need to create a `MANIFEST.in` file to retain the `RELIC-INFO` cache created at compile-time. `RELIC-INFO` contains your project's version information in an easy-to-parse JSON array.
+
 **Configure MANIFEST.in:**
 
 ```
 include RELIC-INFO
 ```
+
+`RELIC-INFO` and `[package_path]/version.py` are both automatically generated files, so they should **never** be committed to your repository. To prevent this from happening, append both of these files to `.gitignore`.
 
 **Configure .gitignore:**
 
@@ -49,10 +168,23 @@ RELIC-INFO
 sample/version.py
 ```
 
+## Retreiving Information
+
+A simple example using version.py:
+
+```python
+>>> from .version import *
+>>> print('Sample {0} (Date: {1}) [{2}]'.format(
+    __version__,
+    __version_date__, 
+    __build_status__))
+Sample 0.0.6 (Date: 2016-03-25 17:34:17 -0400) [release]
+>>>
+```
 
 ## Version module
 
-Here are a few examples of the `version.py` file RELIC generates for you.
+Here are a few examples of what `version.py` might look like during different stages of development.
 
 ### Standard release tag
 
@@ -72,8 +204,8 @@ __all__ = [
 ]
 
 __version__ = '0.0.6'
-__version_post__ = ''
-__version_commit__ = ''
+__version_post__ = '0'
+__version_commit__ = 'feaf392a'
 __version_date__ = '2016-03-25 17:34:17 -0400'
 __version_dirty__ = False
 __build_date__ = '2016-03-26'

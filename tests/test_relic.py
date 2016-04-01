@@ -173,13 +173,13 @@ class TestRelease(TestRepo):
     def test_version_commit_not_a_repository(self):
         shutil.rmtree('.git')
         v = relic.release.get_info()
-        self.assertEqual(v.commit, '0' * relic.ABBREV)
+        self.assertEqual(v.commit, '')
 
 
     def test_version_commit(self):
         runner('git tag -a 1.0.0 -m "test message"')
         v = relic.release.get_info()
-        self.assertNotEqual(v.commit, '0' * relic.ABBREV)
+        self.assertNotEqual(v.commit, '')
 
 
     def test_version_date_not_a_repository(self):

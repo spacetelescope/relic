@@ -44,12 +44,14 @@ __all__ = [
 ]
 
 __version__ = '{0}'
-__version_post__ = '{1}'
-__version_commit__ = '{2}'
-__version_date__ = '{3}'
-__version_dirty__ = {4}
-__build_date__ = '{5}'
-__build_time__ = '{6}'
+__version_short__ = '{1}'
+__version_long__ = '{2}'
+__version_post__ = '{3}'
+__version_commit__ = '{4}'
+__version_date__ = '{5}'
+__version_dirty__ = {6}
+__build_date__ = '{7}'
+__build_time__ = '{8}'
 __build_status__ = 'release' if not int(__version_post__) > 0 \\
     and not __version_dirty__ \\
     else 'development'
@@ -64,6 +66,8 @@ def write_template(info, module_path, filename='version.py'):
     with open(path, 'w+') as f:
         output = template.format(
             info.pep386,
+            info.short,
+            info.long,
             info.post,
             info.commit,
             info.date,
@@ -120,7 +124,7 @@ def __fallback():
         long=no_ver,
         date='',
         dirty=True,
-        commit='0' * ABBREV,
+        commit='',
         post='-1',
     )
     return git.GitVersion(**data)

@@ -25,12 +25,13 @@ import re
 from collections import namedtuple
 from subprocess import Popen, PIPE
 from . import PY3
+from . import ABBREV
 
 
 GitVersion = namedtuple('GitVersion', ['pep386', 'short', 'long', 'date', 'dirty', 'commit', 'post'])
 
 
-def git_describe(abbrev=8):
+def git_describe(abbrev=ABBREV):
     proc = Popen(['git', 'describe', '--always', '--long', '--tags', '--dirty', '--abbrev={0}'.format(abbrev)],
                  stdout=PIPE,
                  stderr=PIPE,
@@ -134,6 +135,12 @@ def git_version_info(remove_pattern=None):
         else:
             version_short = version_long
         pep386 = version_short
+
+    if not commit and version_short:
+        commit = version_short
+
+    if not post:
+        post = '-1'
 
     data = dict(
         pep386=pep386,

@@ -28,4 +28,5 @@ except ImportError:
     # If we are imported via submodule, ignore RELIC's internal version data.
     pass
 
+ABBREV = 8
 PY3 = sys.version_info[0] == 3

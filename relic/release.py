@@ -24,6 +24,7 @@
 import json
 import os
 from datetime import datetime
+from . import ABBREV
 from . import git
 
 
@@ -112,14 +113,14 @@ def get_info(remove_pattern='release_'):
 
 
 def __fallback():
-    nover = '0.0.0'
+    no_ver = '0.0.0'
     data = dict(
-        pep386=nover,
-        short=nover,
-        long=nover,
+        pep386=no_ver,
+        short=no_ver,
+        long=no_ver,
         date='',
         dirty=True,
-        commit='',
-        post='',
+        commit='0' * ABBREV,
+        post='-1',
     )
     return git.GitVersion(**data)

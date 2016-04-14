@@ -35,6 +35,8 @@ template = """
 
 __all__ = [
     '__version__',
+    '__version_short__',
+    '__version_long__',
     '__version_post__',
     '__version_commit__',
     '__version_date__',

@@ -113,30 +113,25 @@ Sometimes a submodule just won't do. If you are not afraid of a little extra cod
 import os
 import subprocess
 import sys
+from setuptools import setup
 
 
-def relic_bootstrap():
+if os.path.exists('relic'):
+    sys.path.insert(1, 'relic')
+    import relic.release
+else:
     try:
         import relic.release
     except ImportError:
-        if not os.path.exists('relic'):
-            try:
-                subprocess.check_call(['git', 'clone', 
-                    'https://github.com/jhunkeler/relic.git'])
-            except subprocess.CalledProcessError as e:
-                print(e)
-                return False
-        
-        sys.path.insert(1, 'relic')
-    return True
+        try:
+            subprocess.check_call(['git', 'clone',
+                'https://github.com/jhunkeler/relic.git'])
+            sys.path.insert(1, 'relic')
+            import relic.release
+        except subprocess.CalledProcessError as e:
+            print(e)
+            exit(1)
 
-
-if not relic_bootstrap():
-    print('Failed to bootstrap RELIC.')
-    exit(1)
-
-import relic.release
-from setuptools import setup
 
 version = relic.release.get_info()
 relic.release.write_template(version, 'sample/')
@@ -194,6 +189,8 @@ Here are a few examples of what `version.py` might look like during different st
 
 __all__ = [
     '__version__',
+    '__version_short__',
+	'__version_long__',
     '__version_post__',
     '__version_commit__',
     '__version_date__',
@@ -203,6 +200,8 @@ __all__ = [
 ]
 
 __version__ = '0.0.6'
+__version_short__ = '0.0.6'
+__version_long__ = '0.0.6-0-feaf392a
 __version_post__ = '0'
 __version_commit__ = 'feaf392a'
 __version_date__ = '2016-03-25 17:34:17 -0400'
@@ -223,6 +222,8 @@ __build_status__ = 'release' if not int(__version_post__) > 0 \
 
 __all__ = [
     '__version__',
+    '__version_short__',
+	'__version_long__',
     '__version_post__',
     '__version_commit__',
     '__version_date__',
@@ -232,6 +233,8 @@ __all__ = [
 ]
 
 __version__ = '0.0.6.dev1'
+__version_short__ = '0.0.6'
+__version_long__ = '0.0.6-1-adef541a'
 __version_post__ = '1'
 __version_commit__ = 'adef541a'
 __version_date__ = '2016-03-26 00:55:27 -0400'
@@ -252,6 +255,8 @@ __build_status__ = 'release' if not int(__version_post__) > 0 \
 
 __all__ = [
     '__version__',
+    '__version_short__',
+	'__version_long__',
     '__version_post__',
     '__version_commit__',
     '__version_date__',
@@ -261,6 +266,8 @@ __all__ = [
 ]
 
 __version__ = '0.0.6.dev1'
+__version_short__ = '0.0.6'
+__version_long__ = '0.0.6-1-adef541a-dirty'
 __version_post__ = '1'
 __version_commit__ = 'adef541a'
 __version_date__ = '2016-03-26 00:55:27 -0400'

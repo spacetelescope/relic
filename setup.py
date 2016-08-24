@@ -12,7 +12,7 @@ setup(
     description='Maintains version information for git projects',
     url='https://github.com/jhunkeler/relic',
     license='BSD',
-    classifiers = [
+    classifiers=[
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',

@@ -129,7 +129,7 @@ def git_version_info(remove_pattern=None):
                         break
                 break
     else:
-        #Worst case scenario: somehow we managed not to obtain a long tag description
+        # Worst case scenario: somehow we managed not to obtain a long tag description
         if '-' in version_long:
             version_short = version_long.split('-')[0]
         else:

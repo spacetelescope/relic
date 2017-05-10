@@ -42,6 +42,7 @@ __all__ = [
     '__version_date__',
     '__version_dirty__',
     '__build_date__',
+    '__build_time__',
     '__build_status__'
 ]
 

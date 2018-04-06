@@ -6,18 +6,10 @@ RELIC stands for "Release I Control". This software attempts to automatically ma
 
 Unless RELIC is distributed as a git submodule within your repository, an anonymous end-user must have RELIC installed, or in their PYTHONPATH, prior to executing your project's `setup.py`.
 
-**Note**: If you plan to build packages for Conda you will need to install this package directly into the build environment. `conda-build` does not recursively clone git repositories, so access to submodule data is limited at best. To work around this issue add `relic` as a build dependency in the `requirements` section of your recipe:
-
-```yaml
-requirements:
-    build:
-    - relic
-    # ...
-```
 
 ## License
 
-BSD
+BSD 3-Clause
 
 ## Installing RELIC
 
@@ -30,68 +22,54 @@ pip install relic
 ### From GitHub with pip (devel)
 
 ```bash
-pip install git+https://github.com/jhunkeler/relic.git
+pip install git+https://github.com/spacetelescope/relic.git
 ```
 
 ### From Github with git (devel)
 
 ```bash
-git clone https://github.com/jhunkeler/relic.git
+git clone https://github.com/spacetelescope/relic.git
 cd relic
 python setup.py install
 ```
 
 ## Incorporating RELIC into your project
 
+### As a Git Submodule
 
-### As a Package (recommended for CI services)
-
-**Install RELIC**
+**Add the RELIC submodule to your project:**
 
 ```bash
-pip install relic
+git submodule add https://github.com/spacetelescope/relic.git
 ```
 
 **Configure `setup.py`**
 
 ```python
-try:
-    import relic.release
-except ImportError:
-    print('This package requires RELIC ("Release I Control"):')
-    print('  pip install relic')
-    exit(1)
-
-from setuptools import setup
-
-
-version = relic.release.get_info()
-relic.release.write_template(version, 'sample/')
-
-setup(
-    name='sample',
-    version=version.pep386,
-    install_requires=['relic', ...]
-    #...
-)
-```
-
-### As a Git Submodule (recommended for high availability)
-
-**Add the RELIC submodule to your project:**
-
-```bash
-git submodule add https://github.com/jhunkeler/relic.git
-```
-
-**Configure setup.py:**
-
-```python
+import os
+import pkgutil
 import sys
-sys.path.insert(1, 'relic')
+from setuptools import setup
+from subprocess import check_call, CalledProcessError
+
+
+if not pkgutil.find_loader('relic'):
+    relic_local = os.path.exists('relic')
+    relic_submodule = (relic_local and
+                       os.path.exists('.gitmodules') and
+                       not os.listdir('relic'))
+    try:
+        if relic_submodule:
+            check_call(['git', 'submodule', 'update', '--init', '--recursive'])
+        elif not relic_local:
+            check_call(['git', 'clone', 'https://github.com/spacetelescope/relic.git'])
+
+        sys.path.insert(1, 'relic')
+    except CalledProcessError as e:
+        print(e)
+        exit(1)
 
 import relic.release
-from setuptools import setup
 
 version = relic.release.get_info()
 relic.release.write_template(version, 'sample/')
@@ -103,45 +81,6 @@ setup(
 )
 ```
 
-### As an automated download (alternative method)
-
-Sometimes a submodule just won't do. If you are not afraid of a little extra code you may bootstrap the RELIC package at build-time.
-
-**Configure setup.py:**
-
-```python
-import os
-import subprocess
-import sys
-from setuptools import setup
-
-
-if os.path.exists('relic'):
-    sys.path.insert(1, 'relic')
-    import relic.release
-else:
-    try:
-        import relic.release
-    except ImportError:
-        try:
-            subprocess.check_call(['git', 'clone',
-                'https://github.com/jhunkeler/relic.git'])
-            sys.path.insert(1, 'relic')
-            import relic.release
-        except subprocess.CalledProcessError as e:
-            print(e)
-            exit(1)
-
-
-version = relic.release.get_info()
-relic.release.write_template(version, 'sample/')
-
-setup(
-    name='sample',
-    version=version.pep386,
-    #...
-)
-```
 
 ## Additional Requirements
 
@@ -151,11 +90,18 @@ In order to build against a tarball generated with `python setup.py sdist`, you 
 
 ```
 include RELIC-INFO
+prune sample/version.py
+
+# Not recommended: Uncomment below to bundle RELIC during `sdist`
+#
+#recursive-include relic *
+#prune relic/.git
+#prune relic/tests
 ```
 
-`RELIC-INFO` and `[package_path]/version.py` are both automatically generated files, so they should **never** be committed to your repository. To prevent this from happening, append both of these files to `.gitignore`.
-
 **Configure .gitignore:**
+
+`RELIC-INFO` and `[package_path]/version.py` are both automatically generated files, so they should **never** be committed to your repository. To prevent this from happening, append both of these paths to `.gitignore`.
 
 ```
 RELIC-INFO

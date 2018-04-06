@@ -8,9 +8,9 @@ setup(
     name='relic',
     version=version.pep386,
     author='Joseph Hunkeler',
-    author_email='jhunkeler@gmail.com',
+    author_email='jhunk@stsci.edu',
     description='Maintains version information for git projects',
-    url='https://github.com/jhunkeler/relic',
+    url='https://github.com/spacetelescope/relic',
     license='BSD',
     classifiers=[
         'License :: OSI Approved :: BSD License',

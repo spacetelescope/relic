@@ -6,7 +6,9 @@ from . import ABBREV
 
 
 RE_GIT_DESC = re.compile('(.+?)-(\d+)-g(\w+)-?(.+)?')
-GitVersion = namedtuple('GitVersion', ['pep386', 'short', 'long', 'date', 'dirty', 'commit', 'post'])
+GitVersion = namedtuple('GitVersion',
+                        ['pep386', 'short', 'long', 'date', 'dirty', 'commit',
+                         'post'])
 
 
 def strip_dirty(tag):

@@ -81,18 +81,15 @@ def get_info(remove_pattern='release_'):
     relic_data = read_info()
     git_data = git.git_version_info(remove_pattern=remove_pattern)
 
-    info = git_data
-    if not info:
-        info = relic_data
-
-    if not info:
-        print("No version data available. Not a git repository?")
+    if not relic_data and not git_data:
+        print('warning: no version data available!')
         return _fallback()
 
-    if git_data != relic_data and git_data:
+    elif git_data != relic_data and git_data:
         write_info(git_data)
+        return git_data
 
-    return info
+    return relic_data
 
 
 def _fallback():

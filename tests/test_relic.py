@@ -84,10 +84,31 @@ class TestRelease(TestRepo):
         v = relic.release.get_info()
         self.assertIsNotNone(v)
         self.assertIsInstance(v, relic.git.GitVersion)
-        self.assertEqual(len(v.pep386), 8)
-        self.assertEqual(v.pep386, v.short)
+        self.assertIn('0.0.0.dev', v.pep386)
+        self.assertIn('+', v.pep386)
         try:
-            self.assertLess(int(v.post), 0)
+            # Test case has a single commit
+            self.assertEqual(int(v.post), 1)
+        except ValueError as e:
+            self.fail(e)
+
+    def test_version_without_tag_autocount(self):
+        count = 0x10
+        for i in range(count):
+            filename = 'file{}.txt'.format(i)
+            runner('touch {}'.format(filename))
+            runner('git add {}'.format(filename))
+            runner('git commit -m "added {}"'.format(filename))
+
+        v = relic.release.get_info()
+        self.assertIsNotNone(v)
+        self.assertIsInstance(v, relic.git.GitVersion)
+        self.assertIn('0.0.0.dev', v.pep386)
+        self.assertIn('+', v.pep386)
+
+        try:
+            # Test case has a single commit
+            self.assertEqual(int(v.post), count + 1)
         except ValueError as e:
             self.fail(e)
 
@@ -164,6 +185,36 @@ class TestRelease(TestRepo):
         v = relic.release.get_info()
         self.assertNotEqual(v.commit, '')
 
+    def test_version_handle_v_prefix(self):
+        runner('git tag -a v1.0.0 -m "test message"')
+        v = relic.release.get_info()
+        self.assertNotIn('v', v.short)
+        self.assertEqual(v.short, '1.0.0')
+
+    def test_version_handle_purge_release_prefix(self):
+        runner('git tag -a release_1.0.0 -m "test message"')
+        v = relic.release.get_info()
+        self.assertNotIn('release_', v.short)
+        self.assertEqual(v.short, '1.0.0')
+
+    def test_version_handle_purge_v_and_release_prefix(self):
+        runner('git tag -a release_v1.0.0 -m "test message"')
+        v = relic.release.get_info()
+        self.assertNotIn('release_', v.short)
+        self.assertNotIn('v', v.short)
+        self.assertEqual(v.short, '1.0.0')
+
+    def test_version_handle_purge_nightmare_pattern(self):
+        runner('git tag -a itsover9000-v1.0.0_codingaward -m "test message"')
+        purge_pattern = ['itsover9000-', '_codingaward']
+        v = relic.release.get_info(purge_pattern)
+        for p in purge_pattern:
+            self.assertNotIn(p, v.short)
+
+        # Should have been purged via regex
+        assert not v.short.startswith('v')
+        self.assertEqual(v.short, '1.0.0')
+
     def test_version_date_not_a_repository(self):
         # Only check if date is populated with "something"
         shutil.rmtree('.git')
@@ -180,10 +231,19 @@ class TestRelease(TestRepo):
 
     def test_read_relic_info(self):
         runner('git tag -a 1.0.0 -m "test message"')
-        _ = relic.release.get_info()
+        # Generate RELIC-INFO
+        relic.release.get_info()
         shutil.rmtree('.git')
+        # Read it back without git
         v = relic.release.get_info()
         self.assertEqual(v.short, '1.0.0')
+
+    def test_read_relic_info_no_git(self):
+        shutil.rmtree('.git')
+        v = relic.release.get_info()
+        self.assertNotIn('+', v.pep386)
+        self.assertEqual(v.short, '0.0.0')
+        self.assertEqual(v.commit, '')
 
 
 if __name__ == '__main__':

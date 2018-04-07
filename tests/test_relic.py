@@ -178,6 +178,13 @@ class TestRelease(TestRepo):
         self.assertIsInstance(v.date, str)
         self.assertNotEqual(len(v.date), 0)
 
+    def test_read_relic_info(self):
+        runner('git tag -a 1.0.0 -m "test message"')
+        _ = relic.release.get_info()
+        shutil.rmtree('.git')
+        v = relic.release.get_info()
+        self.assertEqual(v.short, '1.0.0')
+
 
 if __name__ == '__main__':
     unittest.main()

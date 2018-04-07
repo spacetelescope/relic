@@ -5,7 +5,7 @@ from . import PY3
 from . import ABBREV
 
 
-RE_GIT_DESC = re.compile('(.+?)-(\d+)-g(\w+)-?(.+)?')
+RE_GIT_DESC = re.compile('v?(.+?)-(\d+)-g(\w+)-?(.+)?')
 GitVersion = namedtuple('GitVersion',
                         ['pep386', 'short', 'long', 'date', 'dirty', 'commit',
                          'post'])
@@ -18,7 +18,7 @@ def strip_dirty(tag):
 
 
 def git(*commands):
-    command = ['git'] + [c for c in commands]
+    command = ['git', '--no-pager'] + [c for c in commands]
     proc = Popen(command, stdout=PIPE, stderr=PIPE, stdin=PIPE)
 
     if PY3:
@@ -55,6 +55,11 @@ def git_describe(abbrev=ABBREV):
 def git_log_date(tag='HEAD'):
     tag = strip_dirty(tag)
     return git('log', '-1', '--format=%ai', tag)
+
+
+def git_count(tag='HEAD'):
+    tag = strip_dirty(tag)
+    return git('rev-list', '--count', tag)
 
 
 def git_version_info(remove_pattern=None):
@@ -95,8 +100,13 @@ def git_version_info(remove_pattern=None):
             version_long = strip_dirty(version_long)
             dirty = True
 
-        pep386 = version_short = commit = version_long
-        post = '-1'
+        # Construct version data with what *might* be available
+        commit = version_long
+        version_long = version_short = '0.0.0'
+        post = str(git_count()) or '-1'
+
+        if int(post):  # construct development version
+            pep386 = '{}.dev{}+g{}'.format(version_short, post, commit)
 
     data = dict(
         pep386=pep386,

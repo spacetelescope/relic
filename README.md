@@ -2,10 +2,7 @@
 
 ## What is RELIC?
 
-RELIC stands for "Release I Control". This software attempts to automatically maintain a git project's version information without the need for hardcoded values in the source code. It is designed primarily for hardcore build maintainers, and is best used with continuous integration services (i.e Travis-CI, etc). 
-
-Unless RELIC is distributed as a git submodule within your repository, an anonymous end-user must have RELIC installed, or in their PYTHONPATH, prior to executing your project's `setup.py`.
-
+RELIC stands for "Release I Control". This software attempts to automatically maintain a git project's version information without the need for hardcoded values in the source code. It is designed primarily for hardcore build maintainers, or for developers with rapid release cycles that cannot be bothered to constantly edit their version information.
 
 ## License
 
@@ -35,15 +32,10 @@ python setup.py install
 
 ## Incorporating RELIC into your project
 
-### As a Git Submodule
-
-**Add the RELIC submodule to your project:**
-
-```bash
-git submodule add https://github.com/spacetelescope/relic.git
-```
 
 **Configure `setup.py`**
+
+This configuration block handles how RELIC will be obtained. Refrain from making changes to this code unless you know what you are doing.
 
 ```python
 import os
@@ -81,12 +73,21 @@ setup(
 )
 ```
 
+### As a Git Submodule
+
+**Add the RELIC submodule to your project:**
+
+```bash
+git submodule add https://github.com/spacetelescope/relic.git
+```
+
+RELIC's standard `setup.py` configuration handles the git submodule approach without any user-made changes.
 
 ## Additional Requirements
 
-In order to build against a tarball generated with `python setup.py sdist`, you will need to create a `MANIFEST.in` file to retain the `RELIC-INFO` cache created at build-time. `RELIC-INFO` contains your project's version information in an easy-to-parse JSON array.
-
 **Configure MANIFEST.in:**
+
+In order to build using a tarball generated with `python setup.py sdist`, you will need to create a `MANIFEST.in` file to retain the `RELIC-INFO` cache created at build-time. `RELIC-INFO` contains your project's version information in an easy-to-parse JSON array. It is also in your best interest to prevent distributing `[package_path]/version.py`, because it is regenerated using data from `RELIC-INFO`.
 
 ```
 include RELIC-INFO
@@ -101,7 +102,7 @@ prune sample/version.py
 
 **Configure .gitignore:**
 
-`RELIC-INFO` and `[package_path]/version.py` are both automatically generated files, so they should **never** be committed to your repository. To prevent this from happening, append both of these paths to `.gitignore`.
+`RELIC-INFO` and `[package_path]/version.py` are generated automatically, so they should **never** be committed to your repository. To prevent this from happening, append these paths to `.gitignore` (replacing `sample/` with your package directory).
 
 ```
 RELIC-INFO
@@ -136,7 +137,7 @@ Here are a few examples of what `version.py` might look like during different st
 __all__ = [
     '__version__',
     '__version_short__',
-	'__version_long__',
+    '__version_long__',
     '__version_post__',
     '__version_commit__',
     '__version_date__',
@@ -169,7 +170,7 @@ __build_status__ = 'release' if not int(__version_post__) > 0 \
 __all__ = [
     '__version__',
     '__version_short__',
-	'__version_long__',
+    '__version_long__',
     '__version_post__',
     '__version_commit__',
     '__version_date__',
@@ -178,7 +179,7 @@ __all__ = [
     '__build_status__'
 ]
 
-__version__ = '0.0.6.dev1'
+__version__ = '0.0.6.dev1+gadef541a'
 __version_short__ = '0.0.6'
 __version_long__ = '0.0.6-1-adef541a'
 __version_post__ = '1'
@@ -202,7 +203,7 @@ __build_status__ = 'release' if not int(__version_post__) > 0 \
 __all__ = [
     '__version__',
     '__version_short__',
-	'__version_long__',
+    '__version_long__',
     '__version_post__',
     '__version_commit__',
     '__version_date__',
@@ -211,7 +212,7 @@ __all__ = [
     '__build_status__'
 ]
 
-__version__ = '0.0.6.dev1'
+__version__ = '0.0.6.dev1+gadef541a'
 __version_short__ = '0.0.6'
 __version_long__ = '0.0.6-1-adef541a-dirty'
 __version_post__ = '1'

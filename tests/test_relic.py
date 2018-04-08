@@ -1,10 +1,15 @@
 import os
 import pytest
-import shutil
 import relic
 import relic.release
 import relic.git
+import shutil
+import stat
+import sys
 from subprocess import check_call, STDOUT
+
+
+WIN32 = True if sys.platform.startswith('win') else False
 
 
 def runner(command):
@@ -15,6 +20,29 @@ def runner(command):
 def touch(filename):
     with open(filename, 'a'):
         pass
+
+
+onerror = None
+if WIN32:
+    # From: shutil.rmtree fails on Windows with 'Access is denied'
+    # https://stackoverflow.com/q/1213706/1711764
+    def onerror(func, path, exc_info):
+        """
+        Error handler for ``shutil.rmtree``.
+
+        If the error is due to an access error (read only file)
+        it attempts to add write permission and then retries.
+
+        If the error is for another reason it re-raises the error.
+
+        Usage : ``shutil.rmtree(path, onerror=onerror)``
+        """
+        if not os.access(path, os.W_OK):
+            # Is the error an access error ?
+            os.chmod(path, stat.S_IWUSR)
+            func(path)
+        else:
+            raise
 
 
 @pytest.fixture()
@@ -36,7 +64,7 @@ def _baserepo(tmpdir):
 @pytest.mark.usefixtures('_baserepo')
 class TestGit(object):
     def test_git_describe_not_a_repository(self):
-        shutil.rmtree('.git')
+        shutil.rmtree('.git', onerror=onerror)
         desc = relic.git.git_describe()
         assert desc is None
 
@@ -46,7 +74,7 @@ class TestGit(object):
         assert isinstance(desc, str)
 
     def test_git_log_date_not_a_repository(self):
-        shutil.rmtree('.git')
+        shutil.rmtree('.git', onerror=onerror)
         date = relic.git.git_log_date()
         assert date is None
 
@@ -57,7 +85,7 @@ class TestGit(object):
         assert len(date) > 0
 
     def test_git_version_info_not_a_repository(self):
-        shutil.rmtree('.git')
+        shutil.rmtree('.git', onerror=onerror)
         v = relic.git.git_version_info()
         assert v is None
 
@@ -70,7 +98,7 @@ class TestGit(object):
 @pytest.mark.usefixtures('_baserepo')
 class TestRelease(object):
     def test_version_not_a_repository(self):
-        shutil.rmtree('.git')
+        shutil.rmtree('.git', onerror=onerror)
         v = relic.release.get_info()
         assert v.pep386 == '0.0.0'
         assert int(v.post) < 0
@@ -158,7 +186,7 @@ class TestRelease(object):
         assert post > 0
 
     def test_version_commit_not_a_repository(self):
-        shutil.rmtree('.git')
+        shutil.rmtree('.git', onerror=onerror)
         v = relic.release.get_info()
         assert not v.commit
 
@@ -199,7 +227,7 @@ class TestRelease(object):
 
     def test_version_date_not_a_repository(self):
         # Only check if date is populated with "something"
-        shutil.rmtree('.git')
+        shutil.rmtree('.git', onerror=onerror)
         v = relic.release.get_info()
         assert isinstance(v.date, str)
         assert not v.date
@@ -215,13 +243,13 @@ class TestRelease(object):
         runner('git tag -a 1.0.0 -m "test message"')
         # Generate RELIC-INFO
         relic.release.get_info()
-        shutil.rmtree('.git')
+        shutil.rmtree('.git', onerror=onerror)
         # Read it back without git
         v = relic.release.get_info()
         assert v.short == '1.0.0'
 
     def test_read_relic_info_no_git(self):
-        shutil.rmtree('.git')
+        shutil.rmtree('.git', onerror=onerror)
         v = relic.release.get_info()
         assert '+' not in v.pep386
         assert v.short == '0.0.0'

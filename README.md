@@ -1,5 +1,7 @@
 # RELIC
 
+[![Jenkins Build Status](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/badge/icon)](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/)
+
 ## What is RELIC?
 
 RELIC stands for "Release I Control" and maintains a git project's version information without the need for hardcoding values into the source code. It was designed to aid developers with rapid release cycles.

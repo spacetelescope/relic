@@ -1,11 +1,10 @@
 import os
-import unittest
+import pytest
 import shutil
 import relic
 import relic.release
 import relic.git
 from subprocess import check_call, STDOUT
-from tempfile import mkdtemp
 
 
 def runner(command):
@@ -13,87 +12,71 @@ def runner(command):
         check_call(command, shell=True, stdout=devnull, stderr=STDOUT)
 
 
-class TestRepo(unittest.TestCase):
-    def setUp(self):
-        self.pwd = os.path.abspath(os.curdir)
-        try:
-            self.repo_path = mkdtemp()
-        except (OSError, IOError):
-            print('Cannot write to temporary storage directory. Aborting.')
-            exit(1)
+@pytest.fixture()
+def _baserepo(tmpdir):
+    repo_path = tmpdir.mkdir('repo')
+    os.chdir(str(repo_path))
 
-        try:
-            os.chdir(self.repo_path)
-        except (OSError, IOError):
-            print('Could not change directory. Aborting.')
-            exit(1)
-
-        # Create a basic git repository.
-        runner('git init')
-        runner('git config user.name nobody')
-        runner('git config user.email nobody@nowhere')
-        runner('git config commit.gpgsign false')
-        runner('touch testfile')
-        runner('git add testfile')
-        runner("git commit -m 'Initial'")
-
-    def tearDown(self):
-        os.chdir(self.pwd)
-        if os.path.exists(self.repo_path):
-            shutil.rmtree(self.repo_path)
+    # Create a basic git repository.
+    runner('git init')
+    runner('git config user.name nobody')
+    runner('git config user.email nobody@nowhere')
+    runner('git config commit.gpgsign false')
+    runner('touch testfile')
+    runner('git add testfile')
+    runner("git commit -m 'Initial'")
+    yield
 
 
-class TestGit(TestRepo):
+@pytest.mark.usefixtures('_baserepo')
+class TestGit(object):
     def test_git_describe_not_a_repository(self):
         shutil.rmtree('.git')
         desc = relic.git.git_describe()
-        self.assertIsNone(desc)
+        assert desc is None
 
     def test_git_describe(self):
         runner('git tag -a 1.0.0 -m "test message"')
         desc = relic.git.git_describe()
-        self.assertIsInstance(desc, str)
+        assert isinstance(desc, str)
 
     def test_git_log_date_not_a_repository(self):
         shutil.rmtree('.git')
         date = relic.git.git_log_date()
-        self.assertIsNone(date)
+        assert date is None
 
     def test_git_log_date(self):
         runner('git tag -a 1.0.0 -m "test message"')
         date = relic.git.git_log_date()
-        self.assertIsInstance(date, str)
-        self.assertGreater(len(date), 0)
+        assert isinstance(date, str)
+        assert len(date) > 0
 
     def test_git_version_info_not_a_repository(self):
         shutil.rmtree('.git')
         v = relic.git.git_version_info()
-        self.assertIsNone(v)
+        assert v is None
 
     def test_git_version_info(self):
         runner('git tag -a 1.0.0 -m "test message"')
         v = relic.git.git_version_info()
-        self.assertIsInstance(v, relic.git.GitVersion)
+        assert isinstance(v, relic.git.GitVersion)
 
 
-class TestRelease(TestRepo):
+@pytest.mark.usefixtures('_baserepo')
+class TestRelease(object):
     def test_version_not_a_repository(self):
         shutil.rmtree('.git')
         v = relic.release.get_info()
-        self.assertEqual(v.pep386, '0.0.0')
-        self.assertLess(int(v.post), 0)
+        assert v.pep386 == '0.0.0'
+        assert int(v.post) < 0
 
     def test_version_without_tag(self):
         v = relic.release.get_info()
-        self.assertIsNotNone(v)
-        self.assertIsInstance(v, relic.git.GitVersion)
-        self.assertIn('0.0.0.dev', v.pep386)
-        self.assertIn('+', v.pep386)
-        try:
-            # Test case has a single commit
-            self.assertEqual(int(v.post), 1)
-        except ValueError as e:
-            self.fail(e)
+        assert v is not None
+        assert isinstance(v, relic.git.GitVersion)
+        assert '0.0.0.dev' in v.pep386
+        assert '+' in v.pep386
+        assert int(v.post) == 1
 
     def test_version_without_tag_autocount(self):
         count = 0x10
@@ -104,23 +87,18 @@ class TestRelease(TestRepo):
             runner('git commit -m "added {}"'.format(filename))
 
         v = relic.release.get_info()
-        self.assertIsNotNone(v)
-        self.assertIsInstance(v, relic.git.GitVersion)
-        self.assertIn('0.0.0.dev', v.pep386)
-        self.assertIn('+', v.pep386)
-
-        try:
-            # Test case has a single commit
-            self.assertEqual(int(v.post), count + 1)
-        except ValueError as e:
-            self.fail(e)
+        assert v is not None
+        assert isinstance(v, relic.git.GitVersion)
+        assert '0.0.0.dev' in v.pep386
+        assert '+' in v.pep386
+        assert int(v.post) == count + 1
 
     def test_version_pep386_release(self):
         runner('git tag -a 1.0.0 -m "test message"')
         v = relic.release.get_info()
-        self.assertEqual(v.pep386, '1.0.0')
-        self.assertFalse(v.dirty)
-        self.assertEqual(v.post, '0')
+        assert v.pep386 == '1.0.0'
+        assert not v.dirty
+        assert v.post == '0'
 
     def test_version_pep386_dev(self):
         runner('git tag -a 1.0.0 -m "test message"')
@@ -128,21 +106,21 @@ class TestRelease(TestRepo):
         runner('git add testfile2')
         runner('git commit -m "add testfile2"')
         v = relic.release.get_info()
-        self.assertIn('.dev', v.pep386)
-        self.assertFalse(v.dirty)
-        self.assertGreater(int(v.post), 0)
+        assert '.dev' in v.pep386
+        assert not v.dirty
+        assert int(v.post) > 0
 
     def test_version_dirty_true_if_dirty(self):
         runner('touch testfile3')
         runner('git add testfile3')
         v = relic.release.get_info()
-        self.assertIsInstance(v.dirty, bool)
-        self.assertTrue(v.dirty)
+        assert isinstance(v.dirty, bool)
+        assert v.dirty
 
     def test_version_dirty_false_if_not_dirty(self):
         v = relic.release.get_info()
-        self.assertIsInstance(v.dirty, bool)
-        self.assertFalse(v.dirty)
+        assert isinstance(v.dirty, bool)
+        assert not v.dirty
 
     def test_version_short_is_short(self):
         runner('git tag -a 1.0.0 -m "test message"')
@@ -150,9 +128,9 @@ class TestRelease(TestRepo):
         runner('git add testfile3')
         runner('git commit -m "add testfile"')
         v = relic.release.get_info()
-        self.assertIsInstance(v.short, str)
-        self.assertIn('.', v.short)
-        self.assertNotIn('-', v.short)
+        assert isinstance(v.short, str)
+        assert '.' in v.short
+        assert '-' not in v.short
 
     def test_version_long_is_long(self):
         runner('git tag -a 1.0.0 -m "test message"')
@@ -160,9 +138,9 @@ class TestRelease(TestRepo):
         runner('git add testfile3')
         runner('git commit -m "add testfile"')
         v = relic.release.get_info()
-        self.assertIsInstance(v.long, str)
-        self.assertIn('.', v.long)
-        self.assertIn('-', v.long)
+        assert isinstance(v.long, str)
+        assert '.' in v.long
+        assert '-' in v.long
 
     def test_version_post_incremented_after_commit(self):
         runner('git tag -a 1.0.0 -m "test message"')
@@ -170,67 +148,63 @@ class TestRelease(TestRepo):
         runner('git add testfile3')
         runner('git commit -m "add testfile"')
         v = relic.release.get_info()
-        self.assertIsInstance(v.post, str)
-        try:
-            post = int(v.post)
-        except ValueError as e:
-            self.fail(e)
-
-        self.assertGreater(post, 0)
+        assert isinstance(v.post, str)
+        post = int(v.post)
+        assert post > 0
 
     def test_version_commit_not_a_repository(self):
         shutil.rmtree('.git')
         v = relic.release.get_info()
-        self.assertEqual(v.commit, '')
+        assert not v.commit
 
     def test_version_commit(self):
         runner('git tag -a 1.0.0 -m "test message"')
         v = relic.release.get_info()
-        self.assertNotEqual(v.commit, '')
+        assert v.commit
 
     def test_version_handle_v_prefix(self):
         runner('git tag -a v1.0.0 -m "test message"')
         v = relic.release.get_info()
-        self.assertNotIn('v', v.short)
-        self.assertEqual(v.short, '1.0.0')
+        assert 'v' not in v.short
+        assert v.short == '1.0.0'
 
     def test_version_handle_purge_release_prefix(self):
         runner('git tag -a release_1.0.0 -m "test message"')
         v = relic.release.get_info()
-        self.assertNotIn('release_', v.short)
-        self.assertEqual(v.short, '1.0.0')
+        assert 'release_' not in v.short
+        assert v.short == '1.0.0'
 
     def test_version_handle_purge_v_and_release_prefix(self):
         runner('git tag -a release_v1.0.0 -m "test message"')
         v = relic.release.get_info()
-        self.assertNotIn('release_', v.short)
-        self.assertNotIn('v', v.short)
-        self.assertEqual(v.short, '1.0.0')
+        assert 'release_' not in v.short
+        assert 'v' not in v.short
+        assert v.short == '1.0.0'
 
     def test_version_handle_purge_nightmare_pattern(self):
         runner('git tag -a itsover9000-v1.0.0_codingaward -m "test message"')
         purge_pattern = ['itsover9000-', '_codingaward']
         v = relic.release.get_info(purge_pattern)
         for p in purge_pattern:
-            self.assertNotIn(p, v.short)
+            assert p not in v.short
 
         # Should have been purged via regex
         assert not v.short.startswith('v')
-        self.assertEqual(v.short, '1.0.0')
+        assert v.short == '1.0.0'
 
     def test_version_date_not_a_repository(self):
         # Only check if date is populated with "something"
         shutil.rmtree('.git')
         v = relic.release.get_info()
-        self.assertIsInstance(v.date, str)
-        self.assertEqual(len(v.date), 0)
+        assert isinstance(v.date, str)
+        assert not v.date
 
     def test_version_date(self):
         # Only check if date is populated with "something"
         runner('git tag -a 1.0.0 -m "test message"')
         v = relic.release.get_info()
-        self.assertIsInstance(v.date, str)
-        self.assertNotEqual(len(v.date), 0)
+        assert isinstance(v.date, str)
+        assert v.date
 
     def test_read_relic_info(self):
         runner('git tag -a 1.0.0 -m "test message"')
@@ -239,15 +213,11 @@ class TestRelease(TestRepo):
         shutil.rmtree('.git')
         # Read it back without git
         v = relic.release.get_info()
-        self.assertEqual(v.short, '1.0.0')
+        assert v.short == '1.0.0'
 
     def test_read_relic_info_no_git(self):
         shutil.rmtree('.git')
         v = relic.release.get_info()
-        self.assertNotIn('+', v.pep386)
-        self.assertEqual(v.short, '0.0.0')
-        self.assertEqual(v.commit, '')
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert '+' not in v.pep386
+        assert v.short == '0.0.0'
+        assert not v.commit

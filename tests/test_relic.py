@@ -12,6 +12,11 @@ def runner(command):
         check_call(command, shell=True, stdout=devnull, stderr=STDOUT)
 
 
+def touch(filename):
+    with open(filename, 'a'):
+        pass
+
+
 @pytest.fixture()
 def _baserepo(tmpdir):
     repo_path = tmpdir.mkdir('repo')
@@ -22,7 +27,7 @@ def _baserepo(tmpdir):
     runner('git config user.name nobody')
     runner('git config user.email nobody@nowhere')
     runner('git config commit.gpgsign false')
-    runner('touch testfile')
+    touch('testfile')
     runner('git add testfile')
     runner("git commit -m 'Initial'")
     yield
@@ -82,7 +87,7 @@ class TestRelease(object):
         count = 0x10
         for i in range(count):
             filename = 'file{}.txt'.format(i)
-            runner('touch {}'.format(filename))
+            touch(filename)
             runner('git add {}'.format(filename))
             runner('git commit -m "added {}"'.format(filename))
 
@@ -102,7 +107,7 @@ class TestRelease(object):
 
     def test_version_pep386_dev(self):
         runner('git tag -a 1.0.0 -m "test message"')
-        runner('touch testfile2')
+        touch('testfile2')
         runner('git add testfile2')
         runner('git commit -m "add testfile2"')
         v = relic.release.get_info()
@@ -111,7 +116,7 @@ class TestRelease(object):
         assert int(v.post) > 0
 
     def test_version_dirty_true_if_dirty(self):
-        runner('touch testfile3')
+        touch('testfile3')
         runner('git add testfile3')
         v = relic.release.get_info()
         assert isinstance(v.dirty, bool)
@@ -124,7 +129,7 @@ class TestRelease(object):
 
     def test_version_short_is_short(self):
         runner('git tag -a 1.0.0 -m "test message"')
-        runner('touch testfile3')
+        touch('testfile3')
         runner('git add testfile3')
         runner('git commit -m "add testfile"')
         v = relic.release.get_info()
@@ -134,7 +139,7 @@ class TestRelease(object):
 
     def test_version_long_is_long(self):
         runner('git tag -a 1.0.0 -m "test message"')
-        runner('touch testfile3')
+        touch('testfile3')
         runner('git add testfile3')
         runner('git commit -m "add testfile"')
         v = relic.release.get_info()
@@ -144,7 +149,7 @@ class TestRelease(object):
 
     def test_version_post_incremented_after_commit(self):
         runner('git tag -a 1.0.0 -m "test message"')
-        runner('touch testfile3')
+        touch('testfile3')
         runner('git add testfile3')
         runner('git commit -m "add testfile"')
         v = relic.release.get_info()

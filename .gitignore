@@ -9,3 +9,4 @@ testing.py
 *.egg-info
 *_orig.*
 *.pyc
+*.xml

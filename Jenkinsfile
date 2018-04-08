@@ -4,7 +4,7 @@ if (utils.scm_checkout()) return
 // Globals
 CONDA_CREATE = "conda create -y -q"
 PY_SETUP = "python setup.py"
-PYTEST_ARGS = "-s -v --basetemp=tests_output --junitxml results.xml"
+PYTEST_ARGS = "-s -v --junitxml results.xml"
 
 matrix_python = ["2.7", "3.5", "3.6"]
 matrix = []

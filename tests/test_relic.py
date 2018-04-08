@@ -30,9 +30,12 @@ class TestRepo(unittest.TestCase):
 
         # Create a basic git repository.
         runner('git init')
+        runner('git config user.name nobody')
+        runner('git config user.email nobody@nowhere')
+        runner('git config commit.gpgsign false')
         runner('touch testfile')
         runner('git add testfile')
-        runner("git commit -m 'Initial commit'")
+        runner("git commit -m 'Initial'")
 
     def tearDown(self):
         os.chdir(self.pwd)

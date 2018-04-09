@@ -1,137 +1,62 @@
 # RELIC
 
+[![Jenkins Build Status](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/badge/icon)](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/)
+
 ## What is RELIC?
 
-RELIC stands for "Release I Control". This software attempts to automatically maintain a git project's version information without the need for hardcoded values in the source code. It is designed primarily for hardcore build maintainers, and is best used with continuous integration services (i.e Travis-CI, etc). 
+RELIC stands for "Release I Control" and maintains a git project's version information without the need for hardcoding values into the source code. It was designed to aid developers with rapid release cycles.
 
-Unless RELIC is distributed as a git submodule within your repository, an anonymous end-user must have RELIC installed, or in their PYTHONPATH, prior to executing your project's `setup.py`.
-
-**Note**: If you plan to build packages for Conda you will need to install this package directly into the build environment. `conda-build` does not recursively clone git repositories, so access to submodule data is limited at best. To work around this issue add `relic` as a build dependency in the `requirements` section of your recipe:
-
-```yaml
-requirements:
-    build:
-    - relic
-    # ...
-```
+Just tag your code and get on with with your life. It's that simple.
 
 ## License
 
-BSD
+BSD 3-Clause
 
-## Installing RELIC
-
-### From PyPi with pip (release)
+## Developing RELIC
 
 ```bash
-pip install relic
-```
-
-### From GitHub with pip (devel)
-
-```bash
-pip install git+https://github.com/jhunkeler/relic.git
-```
-
-### From Github with git (devel)
-
-```bash
-git clone https://github.com/jhunkeler/relic.git
+git clone https://github.com/spacetelescope/relic.git
 cd relic
-python setup.py install
+python setup.py develop
 ```
 
 ## Incorporating RELIC into your project
 
-
-### As a Package (recommended for CI services)
-
-**Install RELIC**
-
-```bash
-pip install relic
-```
-
 **Configure `setup.py`**
 
-```python
-try:
-    import relic.release
-except ImportError:
-    print('This package requires RELIC ("Release I Control"):')
-    print('  pip install relic')
-    exit(1)
+The configuration below detects and handles obtaining and/or initializing RELIC. There are three possible scenarios:
 
-from setuptools import setup
+1. As a local clone of the repository
+2. As a git submodule
+3. As an installed package (e.g. site-packages)
 
-
-version = relic.release.get_info()
-relic.release.write_template(version, 'sample/')
-
-setup(
-    name='sample',
-    version=version.pep386,
-    install_requires=['relic', ...]
-    #...
-)
-```
-
-### As a Git Submodule (recommended for high availability)
-
-**Add the RELIC submodule to your project:**
-
-```bash
-git submodule add https://github.com/jhunkeler/relic.git
-```
-
-**Configure setup.py:**
-
-```python
-import sys
-sys.path.insert(1, 'relic')
-
-import relic.release
-from setuptools import setup
-
-version = relic.release.get_info()
-relic.release.write_template(version, 'sample/')
-
-setup(
-    name='sample',
-    version=version.pep386,
-    #...
-)
-```
-
-### As an automated download (alternative method)
-
-Sometimes a submodule just won't do. If you are not afraid of a little extra code you may bootstrap the RELIC package at build-time.
-
-**Configure setup.py:**
+Refrain from making changes to this code unless you know what you are doing.
 
 ```python
 import os
-import subprocess
+import pkgutil
 import sys
 from setuptools import setup
+from subprocess import check_call, CalledProcessError
 
 
-if os.path.exists('relic'):
-    sys.path.insert(1, 'relic')
-    import relic.release
-else:
+if not pkgutil.find_loader('relic'):
+    relic_local = os.path.exists('relic')
+    relic_submodule = (relic_local and
+                       os.path.exists('.gitmodules') and
+                       not os.listdir('relic'))
     try:
-        import relic.release
-    except ImportError:
-        try:
-            subprocess.check_call(['git', 'clone',
-                'https://github.com/jhunkeler/relic.git'])
-            sys.path.insert(1, 'relic')
-            import relic.release
-        except subprocess.CalledProcessError as e:
-            print(e)
-            exit(1)
+        if relic_submodule:
+            check_call(['git', 'submodule', 'update', '--init', '--recursive'])
+        elif not relic_local:
+            check_call(['git', 'clone', 'https://github.com/spacetelescope/relic.git'])
 
+        sys.path.insert(1, 'relic')
+    except CalledProcessError as e:
+        print(e)
+        exit(1)
+
+import relic.release
 
 version = relic.release.get_info()
 relic.release.write_template(version, 'sample/')
@@ -141,30 +66,43 @@ setup(
     version=version.pep386,
     #...
 )
+```
+
+### To add RELIC as a submodule (optional)
+
+```bash
+git submodule add https://github.com/spacetelescope/relic.git
 ```
 
 ## Additional Requirements
 
-In order to build against a tarball generated with `python setup.py sdist`, you will need to create a `MANIFEST.in` file to retain the `RELIC-INFO` cache created at build-time. `RELIC-INFO` contains your project's version information in an easy-to-parse JSON array.
-
 **Configure MANIFEST.in:**
+
+In order to build using a tarball generated by `python setup.py sdist`, you will need to create or edit `MANIFEST.in` to save the `RELIC-INFO` cache. `RELIC-INFO` stores your project's version data in an easy to read JSON array. `[package_path]/version.py` does not need to be packaged with your source distribution either, so it may be omitted.
 
 ```
 include RELIC-INFO
-```
+exclude sample/version.py
 
-`RELIC-INFO` and `[package_path]/version.py` are both automatically generated files, so they should **never** be committed to your repository. To prevent this from happening, append both of these files to `.gitignore`.
+# Not recommended: Uncomment below to bundle RELIC during `sdist`
+#
+#recursive-include relic *
+#prune relic/.git
+#prune relic/tests
+```
 
 **Configure .gitignore:**
 
+As `RELIC-INFO` and `[package_path]/version.py` are generated automatically they should **never** be committed to your repository. To prevent this from happening, append these paths to `.gitignore`:
+
 ```
 RELIC-INFO
-sample/version.py
+*/version.py
 ```
 
 ## Retreiving Information
 
-A simple example using version.py:
+A simple reading information from version.py:
 
 ```python
 >>> from .version import *
@@ -190,7 +128,7 @@ Here are a few examples of what `version.py` might look like during different st
 __all__ = [
     '__version__',
     '__version_short__',
-	'__version_long__',
+    '__version_long__',
     '__version_post__',
     '__version_commit__',
     '__version_date__',
@@ -223,7 +161,7 @@ __build_status__ = 'release' if not int(__version_post__) > 0 \
 __all__ = [
     '__version__',
     '__version_short__',
-	'__version_long__',
+    '__version_long__',
     '__version_post__',
     '__version_commit__',
     '__version_date__',
@@ -232,7 +170,7 @@ __all__ = [
     '__build_status__'
 ]
 
-__version__ = '0.0.6.dev1'
+__version__ = '0.0.6.dev1+gadef541a'
 __version_short__ = '0.0.6'
 __version_long__ = '0.0.6-1-adef541a'
 __version_post__ = '1'
@@ -256,7 +194,7 @@ __build_status__ = 'release' if not int(__version_post__) > 0 \
 __all__ = [
     '__version__',
     '__version_short__',
-	'__version_long__',
+    '__version_long__',
     '__version_post__',
     '__version_commit__',
     '__version_date__',
@@ -265,7 +203,7 @@ __all__ = [
     '__build_status__'
 ]
 
-__version__ = '0.0.6.dev1'
+__version__ = '0.0.6.dev1+gadef541a'
 __version_short__ = '0.0.6'
 __version_long__ = '0.0.6-1-adef541a-dirty'
 __version_post__ = '1'

@@ -2,9 +2,11 @@
 dist/
 build/
 __pycache__/
+.pytest_cache/
 RELIC-INFO
 relic/version.py
 testing.py
 *.egg-info
 *_orig.*
 *.pyc
+*.xml

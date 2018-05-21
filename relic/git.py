@@ -1,6 +1,7 @@
 import re
 from collections import namedtuple
 from subprocess import Popen, PIPE
+from distutils.spawn import find_executable
 from . import PY3
 from . import ABBREV
 
@@ -18,6 +19,10 @@ def strip_dirty(tag):
 
 
 def git(*commands):
+    # If git is not available on PATH, die early
+    if not find_executable('git'):
+        return None
+
     command = ['git', '--no-pager'] + [c for c in commands]
     proc = Popen(command, stdout=PIPE, stderr=PIPE, stdin=PIPE)
 

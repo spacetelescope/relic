@@ -1,4 +1,8 @@
+from __future__ import print_function
+
+
 import re
+import sys
 from collections import namedtuple
 from subprocess import Popen, PIPE
 from distutils.spawn import find_executable
@@ -21,6 +25,9 @@ def strip_dirty(tag):
 def git(*commands):
     # If git is not available on PATH, die early
     if not find_executable('git'):
+        print("warning: RELIC requires 'git' (see: https://git-scm.com)\n"
+              "warning: 'git' is not required for archive-based installation "
+              "(i.e., pip, pypi)", file=sys.stderr)
         return None
 
     command = ['git', '--no-pager'] + [c for c in commands]

@@ -13,7 +13,7 @@ matrix = []
 //    "sdist" is agnostic enough to work without any dependencies
 sdist = new BuildConfig()
 sdist.nodetype = "linux-stable"
-sdist.build_mode = "sdist"
+sdist.name = "sdist"
 sdist.build_cmds = ["${PY_SETUP} sdist"]
 matrix += sdist
 
@@ -24,7 +24,7 @@ for (python_ver in matrix_python) {
 
     install = new BuildConfig()
     install.nodetype = "linux-stable"
-    install.build_mode = CENV
+    install.name = CENV
     install.build_cmds = ["${CONDA_CREATE} -n ${CENV} ${DEPS}",
                           "with_env -n ${CENV} ${PY_SETUP} egg_info",
                           "with_env -n ${CENV} ${PY_SETUP} install"]

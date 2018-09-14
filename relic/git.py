@@ -10,7 +10,7 @@ from . import PY3
 from . import ABBREV
 
 
-RE_GIT_DESC = re.compile('v?(.+?)-(\d+)-g(\w+)-?(.+)?')
+RE_GIT_DESC = re.compile(r"v?(.+?)-(\d+)-g(\w+)-?(.+)?")
 GitVersion = namedtuple('GitVersion',
                         ['pep386', 'short', 'long', 'date', 'dirty', 'commit',
                          'post'])

@@ -6,7 +6,7 @@ CONDA_CREATE = "conda create -y -q"
 PY_SETUP = "python setup.py"
 PYTEST_ARGS = "-v --junitxml results.xml"
 
-matrix_python = ["2.7", "3.5", "3.6"]
+matrix_python = ["2.7", "3.5", "3.6", "3.7"]
 matrix = []
 
 // RUN ONCE:

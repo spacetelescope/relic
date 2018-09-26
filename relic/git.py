@@ -18,7 +18,7 @@ GitVersion = namedtuple('GitVersion',
 
 def strip_dirty(tag):
     if tag.endswith('-dirty'):
-        tag.replace('-dirty', '')
+        tag = tag.replace('-dirty', '')
     return tag
 
 

@@ -17,9 +17,7 @@ GitVersion = namedtuple('GitVersion',
 
 
 def strip_dirty(tag):
-    if tag.endswith('-dirty'):
-        tag.replace('-dirty', '')
-    return tag
+    return tag[:-6] if tag.endswith('-dirty') else tag
 
 
 def git(*commands):

@@ -31,7 +31,7 @@ for (python_ver in matrix_python) {
 pushd /tmp \
 && git clone --recursive https://github.com/jhunkeler/pytest \
 && cd pytest \
-&& git checkout xunit-test \
+&& git checkout junit-compat \
 && pip -v install . \
 && popd
 """,

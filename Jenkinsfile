@@ -28,7 +28,7 @@ for (python_ver in matrix_python) {
     install.build_cmds = [
                           "${CONDA_CREATE} -n ${CENV} ${DEPS}",
 """
-pushd $TMPDIR \
+pushd /tmp \
 && git clone --recursive https://github.com/jhunkeler/pytest \
 && cd pytest \
 && git checkout xunit-test \

@@ -66,6 +66,9 @@ class TestGit(object):
     def test_failure(self):
         assert 1 == 0
 
+    def test_exception(self):
+        raise Exception('Kaboom.')
+
     def test_git_describe_not_a_repository(self):
         shutil.rmtree('.git', onerror=onerror)
         desc = relic.git.git_describe()

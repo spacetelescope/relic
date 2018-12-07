@@ -1,4 +1,4 @@
-// Obtain files from source control system.
+// Obtain files from source control system. /
 if (utils.scm_checkout()) return
 
 // Globals

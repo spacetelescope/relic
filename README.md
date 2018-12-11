@@ -1,6 +1,6 @@
 # RELIC
 
-JENKINS 3
+JENKINS 4
 
 [![Jenkins Build Status](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/badge/icon)](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/)
 

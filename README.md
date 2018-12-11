@@ -1,5 +1,7 @@
 # RELIC
 
+JENKINS
+
 [![Jenkins Build Status](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/badge/icon)](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/)
 
 ## What is RELIC?

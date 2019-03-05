@@ -1,6 +1,7 @@
 # RELIC
 
 [![Jenkins Build Status](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/badge/icon)](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/)
+[![Build Status](https://dev.azure.com/spacetelescope/relic/_apis/build/status/spacetelescope.relic?branchName=master)](https://dev.azure.com/spacetelescope/relic/_build/latest?definitionId=1&branchName=master)
 
 ## What is RELIC?
 

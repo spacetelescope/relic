@@ -25,7 +25,16 @@ for (python_ver in matrix_python) {
     install = new BuildConfig()
     install.nodetype = "linux-stable"
     install.name = CENV
-    install.build_cmds = ["${CONDA_CREATE} -n ${CENV} ${DEPS}",
+    install.build_cmds = [
+                          "${CONDA_CREATE} -n ${CENV} ${DEPS}",
+"""
+pushd /tmp \
+&& git clone --recursive https://github.com/jhunkeler/pytest \
+&& cd pytest \
+&& git checkout junit-compat \
+&& pip -v install . \
+&& popd
+""",
                           "with_env -n ${CENV} ${PY_SETUP} egg_info",
                           "with_env -n ${CENV} ${PY_SETUP} install"]
     install.test_cmds = ["with_env -n ${CENV} pytest ${PYTEST_ARGS}"]

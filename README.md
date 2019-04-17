@@ -3,7 +3,7 @@
 [![Jenkins Build Status](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/badge/icon)](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/)
 [![Build Status](https://dev.azure.com/spacetelescope/relic/_apis/build/status/spacetelescope.relic?branchName=master)](https://dev.azure.com/spacetelescope/relic/_build/latest?definitionId=1&branchName=master)
 
-BOGUS README ENTRY
+BOGUS README ENTRY 2
 
 ## What is RELIC?
 

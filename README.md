@@ -3,6 +3,8 @@
 [![Jenkins Build Status](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/badge/icon)](https://ssbjenkins.stsci.edu/job/STScI/job/relic/job/master/)
 [![Build Status](https://dev.azure.com/spacetelescope/relic/_apis/build/status/spacetelescope.relic?branchName=master)](https://dev.azure.com/spacetelescope/relic/_build/latest?definitionId=1&branchName=master)
 
+BOGUS README ENTRY 3
+
 ## What is RELIC?
 
 RELIC stands for "Release I Control" and maintains a git project's version information without the need for hardcoding values into the source code. It was designed to aid developers with rapid release cycles.
